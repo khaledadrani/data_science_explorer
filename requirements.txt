@@ -3,3 +3,6 @@ mlflow
 torch
 torchtext
 torchdata
+torchsummary
+transformers
+numpy

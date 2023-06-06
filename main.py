@@ -2,17 +2,19 @@ import math
 import os
 from tempfile import TemporaryDirectory
 from typing import Tuple
-
+from torchtext.datasets import WikiText2, WikiText103, YelpReviewPolarity, AG_NEWS, IMDB
+from torchtext.data.utils import get_tokenizer
+from torchtext.vocab import build_vocab_from_iterator
 import numpy as np
 from torch import nn, Tensor
 from torch.nn import TransformerEncoder, TransformerEncoderLayer
-from torch.utils.data import dataset
-
+from torch.utils.data import dataset, Dataset, IterableDataset
 
 DO_TRAIN = True
-DATASET_SIZE = 5000
+DATASET_SIZE = None
 PATH = "model.pt"
 
+datasets = [WikiText2,]# WikiText103, IMDB, AG_NEWS, YelpReviewPolarity]
 
 
 class TransformerModel(nn.Module):
@@ -79,17 +81,32 @@ class PositionalEncoding(nn.Module):
         return self.dropout(x)
 
 
-from torchtext.datasets import WikiText2
-from torchtext.data.utils import get_tokenizer
-from torchtext.vocab import build_vocab_from_iterator
 
-train_iter = WikiText2(split='train')
+
+#train_iter = WikiText2(split='train')
+
+
+# Load train, val, and test splits from each dataset
+train_data = []
+val_data = []
+test_data = []
+
+for index, dataset in enumerate(datasets):
+    train_dataset, val_dataset, test_dataset = dataset()
+    train_dataset = list(train_dataset)
+    print(index, len(train_dataset))
+    train_data.extend(train_dataset)
+    val_data.extend(val_dataset)
+    test_data.extend(test_dataset)
+
+combined_data = train_data + val_data
+
 tokenizer = get_tokenizer('basic_english')
-vocab = build_vocab_from_iterator(map(tokenizer, train_iter), specials=['<unk>'])
+vocab = build_vocab_from_iterator(map(tokenizer, combined_data), specials=['<unk>'])
 vocab.set_default_index(vocab['<unk>'])
 
 
-def data_process(raw_text_iter: dataset.IterableDataset) -> Tensor:
+def data_process(raw_text_iter: IterableDataset) -> Tensor:
     """Converts raw text into a flat Tensor."""
     data = [torch.tensor(vocab(tokenizer(item)), dtype=torch.long) for item in raw_text_iter]
     return torch.cat(tuple(filter(lambda t: t.numel() > 0, data)))
@@ -101,7 +118,7 @@ from torch.utils.data import Dataset
 
 class CustomDataset(Dataset):
     def __init__(self, data_iter):
-        self.data = list(data_iter)[:DATASET_SIZE]
+        self.data = list(data_iter)[:DATASET_SIZE] if DATASET_SIZE else list(data_iter)
 
     def __len__(self):
         return len(self.data)
@@ -112,9 +129,9 @@ class CustomDataset(Dataset):
 
 # ``train_iter`` was "consumed" by the process of building the vocab,
 # so we have to create it again
-train_iter, val_iter, test_iter = WikiText2()
+#train_iter, val_iter, test_iter = WikiText2()
 
-train_iter, val_iter, test_iter = CustomDataset(train_iter), CustomDataset(val_iter), CustomDataset(test_iter)
+train_iter, val_iter, test_iter = CustomDataset(train_data), CustomDataset(val_data), CustomDataset(test_data)
 
 print("DATA LEN ", len(train_iter))
 print(train_iter.data[10])
@@ -289,7 +306,7 @@ loss = checkpoint['val_loss']
 if DO_TRAIN:
     print(model.eval())
 
-original_query = "During missions , players select each unit"
+original_query = "The game Valkyrie Storm is an RPG game that is set in"
 
 print("Query : ",original_query)
 
@@ -297,7 +314,7 @@ queries = [
         str(original_query)+ " "
     ]
 
-for i in range(5):
+for i in range(10):
 
     vectors = data_process(queries)
     src_mask = generate_square_subsequent_mask(bptt).to(device)
