@@ -1,0 +1,17 @@
+[tool.kedro]
+package_name = "data_science_explorer"
+project_name = "data_science_explorer"
+kedro_init_version = "0.18.8"
+
+[tool.isort]
+profile = "black"
+
+[tool.pytest.ini_options]
+addopts = """
+--cov-report term-missing \
+--cov src/data_science_explorer -ra"""
+
+[tool.coverage.report]
+fail_under = 0
+show_missing = true
+exclude_lines = ["pragma: no cover", "raise NotImplementedError"]
