@@ -6,3 +6,4 @@ torchdata
 torchsummary
 transformers
 numpy
+portalocker>=2.0.0
