@@ -2,19 +2,23 @@ import math
 import os
 from tempfile import TemporaryDirectory
 from typing import Tuple
-from torchtext.datasets import WikiText2, WikiText103, YelpReviewPolarity, AG_NEWS, IMDB
-from torchtext.data.utils import get_tokenizer
-from torchtext.vocab import build_vocab_from_iterator
+
 import numpy as np
 from torch import nn, Tensor
 from torch.nn import TransformerEncoder, TransformerEncoderLayer
-from torch.utils.data import dataset, Dataset, IterableDataset
+from torch.utils.data import IterableDataset
+from torchtext.data.utils import get_tokenizer
+from torchtext.vocab import build_vocab_from_iterator
+from transformers import GPT2Tokenizer
+
+from baby_dataset import BabyDataset
 
 DO_TRAIN = True
 DATASET_SIZE = None
 PATH = "model.pt"
+epochs = 20
 
-datasets = [WikiText2,]# WikiText103, IMDB, AG_NEWS, YelpReviewPolarity]
+datasets = [BabyDataset, ]  # WikiText103, IMDB, AG_NEWS, YelpReviewPolarity]
 
 
 class TransformerModel(nn.Module):
@@ -81,9 +85,7 @@ class PositionalEncoding(nn.Module):
         return self.dropout(x)
 
 
-
-
-#train_iter = WikiText2(split='train')
+# train_iter = WikiText2(split='train')
 
 
 # Load train, val, and test splits from each dataset
@@ -111,6 +113,14 @@ def data_process(raw_text_iter: IterableDataset) -> Tensor:
     data = [torch.tensor(vocab(tokenizer(item)), dtype=torch.long) for item in raw_text_iter]
     return torch.cat(tuple(filter(lambda t: t.numel() > 0, data)))
 
+# tokenizer = GPT2Tokenizer.from_pretrained('gpt2')
+
+# def data_process(raw_text_iter: IterableDataset) -> Tensor:
+#     """Converts raw text into a flat Tensor."""
+#
+#     data = [torch.tensor(tokenizer.encode(item), dtype=torch.long) for item in raw_text_iter]
+#     return torch.cat(tuple(filter(lambda t: t.numel() > 0, data)))
+
 
 import torch
 from torch.utils.data import Dataset
@@ -129,12 +139,12 @@ class CustomDataset(Dataset):
 
 # ``train_iter`` was "consumed" by the process of building the vocab,
 # so we have to create it again
-#train_iter, val_iter, test_iter = WikiText2()
+# train_iter, val_iter, test_iter = WikiText2()
 
 train_iter, val_iter, test_iter = CustomDataset(train_data), CustomDataset(val_data), CustomDataset(test_data)
 
 print("DATA LEN ", len(train_iter))
-print(train_iter.data[10])
+print(train_iter.data[len(train_iter) - 1])
 
 train_data = data_process(train_iter.data)
 val_data = data_process(val_iter.data)
@@ -252,8 +262,6 @@ def evaluate(model: nn.Module, eval_data: Tensor) -> float:
 
 
 best_val_loss = float('inf')
-epochs = 10
-
 
 
 if DO_TRAIN:
@@ -281,6 +289,7 @@ if DO_TRAIN:
                 'model_state_dict': model.state_dict(),
                 'optimizer_state_dict': optimizer.state_dict(),
                 'val_loss': val_loss,
+                'tokenizer': tokenizer
             }, PATH)
 
             scheduler.step()
@@ -306,36 +315,47 @@ loss = checkpoint['val_loss']
 if DO_TRAIN:
     print(model.eval())
 
-original_query = "The game Valkyrie Storm is an RPG game that is set in"
-
-print("Query : ",original_query)
-
 queries = [
-        str(original_query)+ " "
-    ]
+    "The game Valkyrie Storm is an RPG game that is set in",
+    "I want",
+    "I love",
+    "I want to have a sandcastle because"
+]
 
-for i in range(10):
+# for i in range(10):
+#
+#     vectors = data_process(queries)
+#     src_mask = generate_square_subsequent_mask(bptt).to(device)
+#
+#     output = model(vectors, src_mask)
+#
+#     output_np = output.detach().cpu().numpy()
+#     output_list = output_np.tolist()
+#     decoded_indices = np.argmax(output_list, axis=-1)
+#
+#     index_to_token = {index: token for token, index in vocab.get_stoi().items()}
+#     decoded_tokens = [[index_to_token[index] for index in sub_list] for sub_list in decoded_indices]
+#
+#     print(f"next word {i}: ", decoded_tokens[0][0])
+#     print("How many tokens?", len(np.array(vectors.detach().cpu().numpy())))
+#
+#     appended_text = decoded_tokens[0][0]+ " "
+#
+#     queries[0] += appended_text
 
-    vectors = data_process(queries)
-    src_mask = generate_square_subsequent_mask(bptt).to(device)
+vectors = data_process(queries)
+src_mask = generate_square_subsequent_mask(bptt).to(device)
 
-    output = model(vectors, src_mask)
+output = model(vectors, src_mask)
 
-    output_np = output.detach().cpu().numpy()
-    output_list = output_np.tolist()
-    decoded_indices = np.argmax(output_list, axis=-1)
+output_np = output.detach().cpu().numpy()
+output_list = output_np.tolist()
+decoded_indices = np.argmax(output_list, axis=-1)
 
-    index_to_token = {index: token for token, index in vocab.get_stoi().items()}
-    decoded_tokens = [[index_to_token[index] for index in sub_list] for sub_list in decoded_indices]
+index_to_token = {index: token for token, index in vocab.get_stoi().items()}
+decoded_tokens = [[index_to_token[index] for index in sub_list] for sub_list in decoded_indices]
 
-    print(f"next word {i}: ", decoded_tokens[0][0])
-    print("How many tokens?", len(np.array(vectors.detach().cpu().numpy())))
-
-    appended_text = decoded_tokens[0][0]+ " "
-
-    queries[0] += appended_text
-
-print()
-print(original_query, "\n", queries[0])
-
-
+for index, query in enumerate(queries):
+    print()
+    print(query, " ", " ".join(decoded_tokens[index]))
+    print()
