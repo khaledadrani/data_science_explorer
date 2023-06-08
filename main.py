@@ -9,9 +9,8 @@ from torch.nn import TransformerEncoder, TransformerEncoderLayer
 from torch.utils.data import IterableDataset
 from torchtext.data.utils import get_tokenizer
 from torchtext.vocab import build_vocab_from_iterator
-from transformers import GPT2Tokenizer
 
-from baby_dataset import BabyDataset
+from src.commons.baby_dataset import BabyDataset
 
 DO_TRAIN = True
 DATASET_SIZE = None
@@ -112,6 +111,7 @@ def data_process(raw_text_iter: IterableDataset) -> Tensor:
     """Converts raw text into a flat Tensor."""
     data = [torch.tensor(vocab(tokenizer(item)), dtype=torch.long) for item in raw_text_iter]
     return torch.cat(tuple(filter(lambda t: t.numel() > 0, data)))
+
 
 # tokenizer = GPT2Tokenizer.from_pretrained('gpt2')
 
@@ -263,7 +263,6 @@ def evaluate(model: nn.Module, eval_data: Tensor) -> float:
 
 best_val_loss = float('inf')
 
-
 if DO_TRAIN:
     with TemporaryDirectory() as tempdir:
         best_model_params_path = os.path.join(tempdir, "best_model_params.pt")
@@ -316,10 +315,12 @@ if DO_TRAIN:
     print(model.eval())
 
 queries = [
-    "The game Valkyrie Storm is an RPG game that is set in",
-    "I want",
-    "I love",
-    "I want to have a sandcastle because"
+    "A is",
+    "B has",
+    "A is dissimilar to"
+    # "I want",
+    # "I love",
+    # "I want to have a sandcastle because"
 ]
 
 # for i in range(10):

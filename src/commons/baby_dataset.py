@@ -138,6 +138,77 @@ baby_small_dataset = ([
                       ])
 
 
+baby_small_dataset = (
+
+    [
+    "A is Alphabet.",
+    "B is Binary.",
+    "C is Carbon.",
+    "A is not B.",
+    "B is not C.",
+    "A is not B and is not C",
+    "B is not A and is not C",
+    "C is not Binary",
+    "B is not Alpahbet",
+    "A is not Binary",
+    "Alphabets consist of letters.",
+    "Binary refers to a numbering system with only two digits, 0 and 1.",
+    "Carbon is an element with the atomic symbol C and atomic number 6.",
+    "A is different from B.",
+    "B is different from C.",
+    "Alphabets are used to represent written language.",
+    "Binary is used in computing and digital systems for information storage and processing.",
+    "Carbon is essential for life and forms the basis of organic chemistry.",
+    "A is not equivalent to B.",
+    "B is not equivalent to C.",
+    "Alphabets can be written in various scripts, such as Latin, Cyrillic, or Arabic.",
+    "Binary numbers are often used to represent machine code instructions.",
+    "Carbon has multiple isotopes, including carbon-12 and carbon-14.",
+    "A and B have distinct properties.",
+    "B and C have distinct properties.",
+    "Alphabetical order is commonly used for sorting words and lists.",
+    "Binary code is used to represent and manipulate data in computers.",
+    "Carbon has a wide range of applications, from fuel sources to building materials.",
+    "A is unrelated to B.",
+    "B is unrelated to C.",
+    "Alphabets can vary in size, with different languages having different numbers of letters.",
+    "Binary arithmetic involves operations like addition, subtraction, and multiplication.",
+    "Carbon forms strong covalent bonds with other elements, enabling the formation of complex molecules.",
+    "A is dissimilar to B.",
+    "B is dissimilar to C.",
+    "Alphabets can be used for communication across different cultures and languages.",
+    "Binary logic is the foundation of digital electronics and computer systems.",
+    "Carbon has an atomic mass of approximately 12 atomic mass units.",
+    "A is distinct from B.",
+    "B is distinct from C.",
+    "Alphabetical order provides a systematic way to organize information.",
+    "Binary digits are also referred to as bits.",
+    "Carbon is a nonmetallic element found in abundance in the Earth's crust.",
+    "A and B do not share common characteristics.",
+    "B and C do not share common characteristics.",
+    "Alphabets can be written using uppercase and lowercase letters.",
+    "Binary code can represent text, images, and other forms of data.",
+    "Carbon can form stable bonds with itself, leading to the formation of carbon-based compounds.",
+    "A is dissimilar to B and C."
+    ],
+    [
+        "A can be used for communication across different cultures and languages.",
+        "C is a nonmetallic element found in abundance in the Earth's crust.",
+        "C can form stable bonds with itself, leading to the formation of carbon-based compounds.",
+        "Alphabet is dissimilar to Binary and Carbon.",
+        "Binary and Carbon do not share common characteristics."
+    ],
+    [
+    "A can be written in various scripts",
+    "B numbers are often used to represent machine code instructions.",
+    "Carbon has multiple isotopes, including carbon-12 and carbon-14.",
+    "Alpahbet and Binary have distinct properties.",
+    "A and C and B have distinct properties.",
+    ]
+
+)
+
+
 class BabyDataset:
     def __init__(self):
         self.data = baby_small_dataset
