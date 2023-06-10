@@ -132,11 +132,23 @@ class BinOp(AST):
         self.token = self.op = op
         self.right = right
 
+    def __str__(self):
+        return f"{self.left} - {self.token} - {self.right}"
+
+    def __repr__(self):
+        return self.__str__()
+
 
 class Num(AST):
     def __init__(self, token):
         self.token = token
         self.value = token.value
+
+    def __str__(self):
+        return str(self.token)
+
+    def __repr__(self):
+        return self.__str__()
 
 
 class Parser:
@@ -166,6 +178,8 @@ class Parser:
             node = self.expr()
             self.eat(RPAREN)
             return node
+
+        raise SyntaxError(f'Bad Token: {token}')
 
     def term(self):
         """term : factor ((MUL | DIV) factor)*"""
@@ -274,4 +288,8 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    text = "10 + 5 * (3 - )"
+    lexer = Lexer(text)
+    parser = Parser(lexer)
+    result = parser.expr()
+    print(result)
